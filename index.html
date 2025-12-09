@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Komandan Bintang: Operasi Cerdas</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            background-color: #0f172a;
+            /* GLOBAL BACKGROUND FIX */
+            background-image: url('https://raw.githubusercontent.com/rizqu24/asset-game-mpiku/refs/heads/main/backgroun2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            height: 100vh; /* Pastikan body 100% tinggi layar */
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 4px 4px 0px #000;
+        }
+
+        .game-btn {
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+        }
+        .game-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0,0,0,0.5);
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-content {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .planet-btn:hover {
+            transform: scale(1.05);
+            border-color: #fbbf24;
+        }
+        
+        /* Selected Node Pulse */
+        @keyframes pulse-ring-p1 {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        @keyframes pulse-ring-p2 {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Panel Soal Compact */
+        .math-panel {
+            background: rgba(31, 41, 55, 0.95);
+            border: 3px solid;
+            border-radius: 1rem;
+            padding: 1rem;
+            width: 280px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            animation: popIn 0.2s ease-out;
+            pointer-events: auto; 
+        }
+
+        .active-turn {
+            border: 3px solid #fbbf24;
+            box-shadow: 0 0 15px #fbbf24;
+            transform: scale(1.02);
+        }
+        .inactive-turn {
+            opacity: 0.6;
+            filter: grayscale(0.8);
+        }
+
+        /* Portrait Warning */
+        #portraitWarning {
+            display: none;
+        }
+        @media (orientation: portrait) {
+            #portraitWarning {
+                display: flex;
+            }
+            #gameContainer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="text-white select-none">
+
+    <!-- PORTRAIT WARNING -->
+    <div id="portraitWarning" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col items-center justify-center text-center p-8">
+        <i class="fas fa-mobile-alt fa-spin text-6xl text-yellow-400 mb-6"></i>
+        <h2 class="title-font text-2xl text-white mb-2">Harap Putar Perangkat</h2>
+        <p class="text-gray-400">Game ini dirancang untuk mode Landscape agar tampilan lebih optimal.</p>
+    </div>
+
+    <!-- GAME CONTAINER (FIXED FULL SCREEN) -->
+    <div id="gameContainer" class="fixed inset-0 w-full h-full overflow-hidden">
+
+        <!-- 1. SPLASH SCREEN -->
+        <div id="splashScreen" class="absolute inset-0 z-50 flex flex-col items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+            <div class="relative z-10 text-center px-4 w-full h-full flex flex-col items-center justify-center">
+                <h1 class="title-font text-5xl md:text-7xl lg:text-8xl text-yellow-400 mb-2 tracking-wide drop-shadow-lg">KOMANDAN BINTANG</h1>
+                <h2 class="title-font text-3xl md:text-5xl lg:text-6xl text-blue-400 mb-10 drop-shadow-md">OPERASI CERDAS</h2>
+                <button onclick="ui.showMenu()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-12 lg:py-6 lg:px-16 rounded-full text-2xl lg:text-4xl border-b-4 border-green-700 animate-bounce">
+                    <i class="fas fa-play mr-2"></i> MULAI
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. MAIN MENU -->
+        <div id="menuScreen" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center">
+            <div class="glass-panel p-8 rounded-2xl shadow-2xl border-4 border-blue-500 max-w-lg w-full mx-4 modal-content overflow-y-auto max-h-[90vh]">
+                <h2 class="title-font text-3xl lg:text-4xl text-center mb-6 text-blue-300">Konfigurasi Misi</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-400 mb-2 font-bold text-lg">Mode Permainan</label>
+                    <div class="flex gap-2">
+                        <button id="btnModeSingle" onclick="ui.setMode('single')" class="flex-1 py-3 bg-blue-600 rounded-lg border-2 border-yellow-400 font-bold text-lg">Single Player</button>
+                        <button id="btnModeMulti" onclick="ui.setMode('multi')" class="flex-1 py-3 bg-gray-700 rounded-lg border-2 border-transparent font-bold text-gray-400 hover:bg-gray-600 text-lg">2 Player (Versus)</button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-400 mb-2 font-bold text-lg">Nama Komandan (P1)</label>
+                    <input type="text" id="p1Name" class="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg" placeholder="Hero" value="Hero">
+                </div>
+
+                <div id="p2InputGroup" class="mb-4 hidden">
+                    <label class="block text-gray-400 mb-2 font-bold text-lg">Nama Musuh (P2)</label>
+                    <input type="text" id="p2Name" class="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-lg" placeholder="Rival" value="Rival">
+                </div>
+
+                <!-- Input Waktu untuk Single Player -->
+                <div id="timeInputGroup" class="mb-4">
+                    <label class="block text-gray-400 mb-2 font-bold text-lg">Waktu Misi</label>
+                    <select id="timeLimit" class="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
+                        <option value="5">5 Menit</option>
+                        <option value="10">10 Menit</option>
+                        <option value="15">15 Menit</option>
+                        <option value="20">20 Menit</option>
+                        <option value="30">30 Menit</option>
+                    </select>
+                </div>
+
+                <div id="roundInputGroup" class="mb-4 hidden">
+                    <label class="block text-gray-400 mb-2 font-bold text-lg">Jumlah Putaran</label>
+                    <select id="totalRounds" class="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-lg">
+                        <option value="5">5 Putaran</option>
+                        <option value="10">10 Putaran</option>
+                        <option value="15">15 Putaran</option>
+                        <option value="20">20 Putaran</option>
+                        <option value="30">30 Putaran</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-400 mb-2 font-bold text-lg">Materi Operasi</label>
+                    <select id="difficulty" class="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
+                        <option value="mult">1. Perkalian Dasar</option>
+                        <option value="div">2. Pembagian Dasar</option>
+                        <option value="frac_mult">3. Perkalian Pecahan Dasar</option>
+                        <option value="frac_div">4. Pembagian Pecahan Dasar</option>
+                        <option value="mixed">5. Campur</option>
+                    </select>
+                </div>
+
+                <button onclick="ui.showLevelSelect()" class="game-btn w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 rounded-xl text-2xl border-b-4 border-yellow-700">
+                    PILIH BASE
+                </button>
+            </div>
+        </div>
+
+        <!-- 2.5 LEVEL SELECTION -->
+        <div id="levelSelectScreen" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60"></div>
+            <div class="relative z-10 w-full max-w-6xl flex flex-col items-center justify-center h-full">
+                <h2 class="title-font text-3xl md:text-5xl text-yellow-400 mb-4 text-center drop-shadow-md">PILIH TARGET OPERASI</h2>
+                <p class="text-gray-300 mb-8 text-center text-base md:text-xl">Setiap planet memiliki jaringan pos yang unik.</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full overflow-y-auto max-h-[70vh] px-2" id="levelGrid"></div>
+                <button onclick="ui.showMenu()" class="mt-8 text-gray-300 hover:text-white underline font-bold bg-black/50 px-6 py-3 rounded-full text-lg">Kembali ke Menu</button>
+            </div>
+        </div>
+
+        <!-- 3. GAMEPLAY -->
+        <div id="gameScreen" class="hidden absolute inset-0 z-0 overflow-hidden touch-none w-full h-full">
+            <canvas id="gameCanvas" class="block w-full h-full touch-none"></canvas>
+
+            <!-- Top HUD -->
+            <div class="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-start pointer-events-none z-10">
+                <!-- P1 HUD -->
+                <div id="hudP1Wrapper" class="w-1/3 max-w-sm transition-all duration-300 p-3 rounded-xl">
+                    <div class="flex justify-between text-blue-300 font-bold mb-2 text-base md:text-xl lg:text-2xl drop-shadow-md">
+                        <span id="hudP1Name">Player 1</span>
+                        <span id="hudP1HP">100/100</span>
+                    </div>
+                    <div class="h-4 md:h-6 bg-gray-700/80 rounded-full overflow-hidden border-2 border-gray-500">
+                        <div id="barP1" class="h-full bg-blue-500 transition-all duration-300 shadow-[0_0_10px_#3b82f6]" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <!-- Timer & Info Center -->
+                <div class="bg-gray-800/90 px-6 py-3 rounded-2xl border-2 border-gray-600 text-center backdrop-blur-sm shadow-lg mx-2 min-w-[150px]">
+                    <span id="timerDisplay" class="font-mono text-2xl md:text-4xl text-yellow-400 font-bold block leading-none">00:00</span>
+                    <div id="phaseDisplay" class="text-xs md:text-sm lg:text-base text-white font-bold mt-1 hidden">FASE PERSIAPAN</div>
+                    <div id="roundDisplay" class="text-xs md:text-sm lg:text-base text-gray-400 uppercase tracking-widest font-bold mt-1">PLANET</div>
+                </div>
+
+                <!-- P2 HUD -->
+                <div id="hudP2Wrapper" class="w-1/3 max-w-sm text-right transition-all duration-300 p-3 rounded-xl">
+                    <div class="flex justify-between text-red-300 font-bold mb-2 text-base md:text-xl lg:text-2xl drop-shadow-md">
+                        <span id="hudP2HP">100/100</span>
+                        <span id="hudP2Name">Komputer</span>
+                    </div>
+                    <div class="h-4 md:h-6 bg-gray-700/80 rounded-full overflow-hidden border-2 border-gray-500">
+                        <div id="barP2" class="h-full bg-red-500 transition-all duration-300 shadow-[0_0_10px_#ef4444] ml-auto" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pause Button -->
+            <div class="absolute top-24 left-4 md:top-32 md:left-6 pointer-events-auto z-30">
+                <button onclick="game.togglePause()" class="game-btn bg-gray-700/80 hover:bg-gray-600 text-white w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-gray-400 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                    <i class="fas fa-pause fa-lg md:fa-xl"></i>
+                </button>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="absolute bottom-4 md:bottom-8 left-0 right-0 px-4 md:px-8 flex justify-between items-end pointer-events-none z-20">
+                <!-- P1 Controls (Kiri) -->
+                <div class="pointer-events-auto flex flex-col gap-3 items-start relative w-1/3">
+                    <!-- Modal Soal P1 -->
+                    <div id="mathModalP1" class="hidden math-panel border-blue-400 mb-2 origin-bottom-left scale-90 md:scale-100 lg:scale-110 origin-bottom-left">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-blue-300 tracking-widest">LOGISTIK P1</span>
+                            <button onclick="mathGame.closeModal(1)" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="bg-gray-900 p-2 rounded mb-3 text-center border border-gray-700">
+                            <span id="mathQuestionP1" class="title-font text-2xl text-white">?</span>
+                        </div>
+                        <div id="mathAnswersP1" class="grid grid-cols-2 gap-2 text-sm"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 w-full max-w-[180px] lg:max-w-[220px]">
+                        <div class="bg-blue-900/90 p-4 rounded-xl border-2 border-blue-500 backdrop-blur-md shadow-lg">
+                            <div class="text-xs md:text-sm lg:text-base text-blue-200 uppercase font-bold tracking-wider">Pasukan P1</div>
+                            <div id="p1Troops" class="text-3xl md:text-5xl font-bold text-white title-font drop-shadow-md">0</div>
+                        </div>
+                        <!-- Tombol Jawab Soal (Hanya Fase 1 / RTS) -->
+                        <button id="btnMathP1" onclick="mathGame.showModal(1)" class="game-btn bg-blue-600 hover:bg-blue-500 text-white p-3 md:p-5 rounded-xl font-bold shadow-lg border-b-4 border-blue-800 flex items-center gap-3 group w-full">
+                            <div class="bg-white/20 p-2 rounded-lg group-hover:rotate-12 transition-transform">
+                                <i class="fas fa-brain fa-xl"></i>
+                            </div>
+                            <div class="text-left leading-tight flex-1">
+                                <div class="text-sm md:text-lg lg:text-xl">Jawab</div>
+                                <div class="text-xs md:text-sm opacity-75 font-mono">+10 Unit</div>
+                            </div>
+                        </button>
+                        <!-- Tombol SKIP (Hanya Fase 2 Turn Based) -->
+                        <button id="btnSkipP1" onclick="game.skipTurn(1)" class="hidden game-btn bg-gray-600 hover:bg-gray-500 text-white p-4 rounded-xl font-bold shadow-lg border-b-4 border-gray-800 w-full text-lg">
+                            SKIP GILIRAN <i class="fas fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- P2 Controls (Kanan) -->
+                <div id="p2Controls" class="pointer-events-auto flex flex-col gap-3 items-end hidden relative w-1/3">
+                    <!-- Modal Soal P2 -->
+                    <div id="mathModalP2" class="hidden math-panel border-red-400 mb-2 origin-bottom-right scale-90 md:scale-100 lg:scale-110 origin-bottom-right">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-red-300 tracking-widest">LOGISTIK P2</span>
+                            <button onclick="mathGame.closeModal(2)" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="bg-gray-900 p-2 rounded mb-3 text-center border border-gray-700">
+                            <span id="mathQuestionP2" class="title-font text-2xl text-white">?</span>
+                        </div>
+                        <div id="mathAnswersP2" class="grid grid-cols-2 gap-2 text-sm"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 w-full max-w-[180px] lg:max-w-[220px] items-end">
+                        <div class="bg-red-900/90 p-4 rounded-xl border-2 border-red-500 backdrop-blur-md shadow-lg w-full text-right">
+                            <div class="text-xs md:text-sm lg:text-base text-red-200 uppercase font-bold tracking-wider">Pasukan P2</div>
+                            <div id="p2Troops" class="text-3xl md:text-5xl font-bold text-white title-font drop-shadow-md">0</div>
+                        </div>
+                        <button id="btnMathP2" onclick="mathGame.showModal(2)" class="game-btn bg-red-600 hover:bg-red-500 text-white p-3 md:p-5 rounded-xl font-bold shadow-lg border-b-4 border-red-800 flex items-center gap-3 flex-row-reverse group w-full">
+                            <div class="bg-white/20 p-2 rounded-lg group-hover:-rotate-12 transition-transform">
+                                <i class="fas fa-brain fa-xl"></i>
+                            </div>
+                            <div class="text-right leading-tight flex-1">
+                                <div class="text-sm md:text-lg lg:text-xl">Jawab</div>
+                                <div class="text-xs md:text-sm opacity-75 font-mono">+10 Unit</div>
+                            </div>
+                        </button>
+                        <!-- Tombol SKIP (Hanya Fase 2 Turn Based) -->
+                        <button id="btnSkipP2" onclick="game.skipTurn(2)" class="hidden game-btn bg-gray-600 hover:bg-gray-500 text-white p-4 rounded-xl font-bold shadow-lg border-b-4 border-gray-800 w-full text-lg">
+                            SKIP GILIRAN <i class="fas fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTIONS (Moved Independent Bottom Center) -->
+            <div class="absolute bottom-16 left-0 right-0 flex justify-center items-center pointer-events-none z-30">
+                <div id="gameHint" class="bg-black/70 px-6 py-3 rounded-full border-2 border-yellow-500/30 text-yellow-200 text-sm md:text-base lg:text-lg font-mono animate-pulse shadow-xl leading-tight backdrop-blur-sm">
+                    Ketuk Pos Anda -> Ketuk Tujuan
+                </div>
+            </div>
+
+            <!-- Notification/Phase Modal -->
+            <div id="notificationModal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
+                <div class="bg-gray-900/90 border-4 border-yellow-400 px-12 py-8 rounded-3xl transform scale-100 md:scale-125 lg:scale-150 shadow-[0_0_50px_rgba(234,179,8,0.5)]">
+                    <h2 id="notifTitle" class="title-font text-4xl lg:text-5xl text-yellow-400 text-center uppercase">PUTARAN 1</h2>
+                    <p id="notifDesc" class="text-white text-center font-mono mt-2 text-xl lg:text-2xl">FASE PENGUMPULAN</p>
+                </div>
+            </div>
+
+            <!-- Pause Modal (Global) -->
+            <div id="pauseModal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                <div class="bg-gray-800 p-8 lg:p-12 rounded-2xl border-4 border-blue-400 text-center modal-content w-full max-w-sm lg:max-w-md">
+                    <h2 class="title-font text-4xl lg:text-5xl mb-8 text-blue-300">ISTIRAHAT</h2>
+                    <div class="flex flex-col gap-4 lg:gap-6">
+                        <button onclick="game.togglePause()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-2xl lg:text-3xl border-b-4 border-green-700">LANJUT</button>
+                        <button onclick="game.quit()" class="game-btn bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl text-2xl lg:text-3xl border-b-4 border-red-700">KELUAR</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Over -->
+            <div id="gameOverModal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+                <div class="bg-gray-800 p-8 lg:p-12 rounded-3xl border-4 border-white text-center modal-content max-w-lg lg:max-w-2xl w-full">
+                    <h2 id="winnerText" class="title-font text-4xl md:text-5xl lg:text-6xl mb-6 text-yellow-400 leading-tight">SELESAI</h2>
+                    <div class="text-7xl lg:text-8xl mb-8 animate-bounce" id="winnerIcon">🏆</div>
+                    <p class="mb-10 text-gray-300 text-xl lg:text-2xl" id="winnerDesc">...</p>
+                    <div class="flex flex-col md:flex-row gap-6 justify-center">
+                        <button onclick="location.reload()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-10 rounded-full text-xl lg:text-2xl border-b-4 border-green-700">Main Lagi</button>
+                        <button onclick="game.quit()" class="game-btn bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-10 rounded-full text-xl lg:text-2xl border-b-4 border-gray-800">Menu Utama</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. FOOTER -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-gray-900/90 border-t border-gray-800 py-2 px-4 flex justify-between items-center z-50 text-xs md:text-sm text-gray-500 backdrop-blur-md">
+        <div>Game design by @herisheroes</div>
+        <div class="flex gap-4 text-lg">
+            <i class="fab fa-youtube hover:text-red-500 cursor-pointer"></i>
+            <i class="fab fa-tiktok hover:text-pink-500 cursor-pointer"></i>
+            <i class="fab fa-instagram hover:text-purple-500 cursor-pointer"></i>
+        </div>
+    </footer>
+
+    <script>
+        const PLANETS = [
+            {
+                name: "Merkurius",
+                desc: "Jalur Sejajar",
+                color: "border-orange-500 bg-orange-900/50",
+                nodes: [
+                    {id: 0, x: 0.1, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.9, y: 0.5, type: 'base', owner: 2}, 
+                    {id: 2, x: 0.35, y: 0.2, type: 'post'}, {id: 3, x: 0.65, y: 0.2, type: 'post'}, 
+                    {id: 4, x: 0.35, y: 0.5, type: 'post'}, {id: 5, x: 0.65, y: 0.5, type: 'post'}, 
+                    {id: 6, x: 0.35, y: 0.65, type: 'post'}, {id: 7, x: 0.65, y: 0.65, type: 'post'}  
+                ],
+                edges: [[0,2], [2,3], [3,1], [0,4], [4,5], [5,1], [0,6], [6,7], [7,1]]
+            },
+            {
+                name: "Venus",
+                desc: "Formasi Hexagon",
+                color: "border-yellow-500 bg-yellow-800/50",
+                nodes: [
+                    {id: 0, x: 0.08, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.92, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.25, y: 0.25, type: 'post'}, {id: 3, x: 0.25, y: 0.6, type: 'post'}, 
+                    {id: 4, x: 0.5, y: 0.5, type: 'post', size: 1.5}, 
+                    {id: 5, x: 0.75, y: 0.25, type: 'post'}, {id: 6, x: 0.75, y: 0.6, type: 'post'}  
+                ],
+                edges: [[0,2], [0,4], [0,3], [2,5], [3,6], [2,4], [3,4], [5,4], [6,4], [5,1], [4,1], [6,1]]
+            },
+            {
+                name: "Bumi",
+                desc: "Konvergensi Bintang",
+                color: "border-blue-500 bg-blue-900/50",
+                nodes: [
+                    {id: 0, x: 0.1, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.9, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.3, y: 0.2, type: 'post'}, {id: 3, x: 0.3, y: 0.6, type: 'post'},
+                    {id: 4, x: 0.5, y: 0.5, type: 'post', size: 1.8}, 
+                    {id: 5, x: 0.7, y: 0.2, type: 'post'}, {id: 6, x: 0.7, y: 0.6, type: 'post'}
+                ],
+                edges: [[0,2], [0,3], [2,4], [3,4], [2,5], [3,6], [4,5], [4,6], [5,1], [6,1], [4,1]]
+            },
+            {
+                name: "Mars",
+                desc: "Jalur Zig-Zag",
+                color: "border-red-500 bg-red-900/50",
+                nodes: [
+                    {id: 0, x: 0.08, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.92, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.25, y: 0.2, type: 'post'}, {id: 3, x: 0.5, y: 0.2, type: 'post'}, {id: 4, x: 0.75, y: 0.2, type: 'post'},
+                    {id: 5, x: 0.35, y: 0.6, type: 'post'}, {id: 6, x: 0.65, y: 0.6, type: 'post'}
+                ],
+                edges: [[0,2], [0,5], [2,5], [2,3], [5,3], [3,6], [5,6], [3,4], [6,4], [6,1], [4,1]]
+            },
+            {
+                name: "Jupiter",
+                desc: "Kotak Ganda",
+                color: "border-orange-400 bg-orange-800/50",
+                nodes: [
+                    {id: 0, x: 0.1, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.9, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.3, y: 0.3, type: 'post'}, {id: 3, x: 0.3, y: 0.6, type: 'post'},
+                    {id: 4, x: 0.7, y: 0.3, type: 'post'}, {id: 5, x: 0.7, y: 0.6, type: 'post'}
+                ],
+                edges: [[0,2], [0,3], [2,3], [2,4], [3,5], [4,5], [4,1], [5,1]]
+            },
+            {
+                name: "Saturnus",
+                desc: "Titik Sempit",
+                color: "border-yellow-200 bg-yellow-700/50",
+                nodes: [
+                    {id: 0, x: 0.08, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.92, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.25, y: 0.2, type: 'post'}, {id: 3, x: 0.25, y: 0.5, type: 'post'}, {id: 4, x: 0.25, y: 0.65, type: 'post'},
+                    {id: 5, x: 0.5, y: 0.5, type: 'post', size: 1.5}, 
+                    {id: 6, x: 0.75, y: 0.2, type: 'post'}, {id: 7, x: 0.75, y: 0.5, type: 'post'}, {id: 8, x: 0.75, y: 0.65, type: 'post'}
+                ],
+                edges: [[0,2], [0,3], [0,4], [2,5], [3,5], [4,5], [5,6], [5,7], [5,8], [6,1], [7,1], [8,1]]
+            },
+            {
+                name: "Uranus",
+                desc: "Formasi Layang",
+                color: "border-cyan-400 bg-cyan-800/50",
+                nodes: [
+                    {id: 0, x: 0.1, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.9, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.3, y: 0.5, type: 'post'},
+                    {id: 3, x: 0.5, y: 0.2, type: 'post'}, {id: 4, x: 0.5, y: 0.65, type: 'post'},
+                    {id: 5, x: 0.7, y: 0.5, type: 'post'}
+                ],
+                edges: [[0,2], [2,3], [2,4], [3,5], [4,5], [3,4], [5,1]]
+            },
+            {
+                name: "Neptunus",
+                desc: "Jaring Laba",
+                color: "border-indigo-500 bg-indigo-900/50",
+                nodes: [
+                    {id: 0, x: 0.1, y: 0.5, type: 'base', owner: 1}, 
+                    {id: 1, x: 0.9, y: 0.5, type: 'base', owner: 2},
+                    {id: 2, x: 0.3, y: 0.3, type: 'post'}, {id: 3, x: 0.3, y: 0.6, type: 'post'},
+                    {id: 4, x: 0.5, y: 0.3, type: 'post'}, {id: 5, x: 0.5, y: 0.6, type: 'post'},
+                    {id: 6, x: 0.7, y: 0.3, type: 'post'}, {id: 7, x: 0.7, y: 0.6, type: 'post'}
+                ],
+                edges: [[0,2], [0,3], [2,3], [2,4], [3,5], [4,5], [4,6], [5,7], [6,7], [6,1], [7,1]]
+            }
+        ];
+
+        const CONFIG = {
+            baseHP: 100,
+            troopSpeed: 3, 
+            baseNodeRadius: 35,
+            postNodeRadius: 22,
+        };
+
+        const STATE = {
+            mode: 'single', // 'single' | 'multi'
+            currentLevel: null,
+            isPlaying: false,
+            isPaused: false,
+            p1Name: 'Hero', p2Name: 'Rival',
+            p1HP: 100, p2HP: 100,
+            p1Resource: 20, p2Resource: 20,
+            nodes: [], 
+            troops: [], 
+            particles: [],
+            // Multi-touch Selection States
+            p1SelectedNodeId: null, 
+            p2SelectedNodeId: null,
+            timer: 0,
+            timeLimit: 0, // In seconds, for single player
+            botTimerId: null,
+            scale: 1, // Global scale factor for responsive drawing
+
+            // Turn Based States (Multiplayer)
+            turnMaxRounds: 5,
+            turnCurrentRound: 1,
+            turnPhase: 'gather', // 'gather' | 'move'
+            turnGatherTimer: 30,
+            turnActivePlayer: 1 // 1 for P1, 2 for P2
+        };
+
+        class Node {
+            constructor(def) {
+                this.id = def.id;
+                this.pctX = def.x; 
+                this.pctY = def.y; 
+                this.type = def.type;
+                this.owner = def.owner || 0;
+                this.value = 0; 
+                this.sizeMult = def.size || 1;
+                this.x = 0; 
+                this.y = 0;
+                // Base radius only used for reference, drawing uses dynamic calculation
+                this.baseRadius = (this.type === 'base' ? CONFIG.baseNodeRadius : CONFIG.postNodeRadius) * this.sizeMult;
+            }
+
+            updatePos(w, h) {
+                this.x = w * this.pctX;
+                this.y = h * this.pctY;
+            }
+
+            draw(ctx) {
+                // Calculate dynamic radius
+                const r = this.baseRadius * STATE.scale;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                
+                if (this.owner === 0) ctx.fillStyle = '#4b5563'; 
+                else if (this.owner === 1) ctx.fillStyle = '#3b82f6'; 
+                else ctx.fillStyle = '#ef4444'; 
+
+                // Selected Effect (P1 Blue/Gold, P2 Red/Gold)
+                let isP1Sel = STATE.p1SelectedNodeId === this.id;
+                let isP2Sel = STATE.p2SelectedNodeId === this.id;
+
+                // Turn Based Visual Cue: Dim nodes if not your turn
+                if (STATE.mode === 'multi' && STATE.turnPhase === 'move') {
+                    if (this.owner !== 0 && this.owner !== STATE.turnActivePlayer && !isP1Sel && !isP2Sel) {
+                        ctx.fillStyle = this.owner === 1 ? '#1e3a8a' : '#7f1d1d'; // Darker shade
+                    }
+                }
+
+                if (isP1Sel || isP2Sel) {
+                    ctx.shadowBlur = 20 * STATE.scale;
+                    ctx.shadowColor = '#fbbf24'; 
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 4 * STATE.scale;
+                } else {
+                    ctx.shadowBlur = this.value > 0 ? 15 * STATE.scale : 0;
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 3 * STATE.scale;
+                }
+                
+                ctx.fill();
+                ctx.stroke();
+                
+                // Extra rings to distinguish selection owner
+                if (isP1Sel) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r + (5 * STATE.scale), 0, Math.PI * 2);
+                    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2 * STATE.scale; ctx.stroke();
+                }
+                if (isP2Sel) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r + (isP1Sel ? 10 * STATE.scale : 5 * STATE.scale), 0, Math.PI * 2); 
+                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2 * STATE.scale; ctx.stroke();
+                }
+
+                ctx.shadowBlur = 0; 
+                ctx.closePath();
+
+                // Draw Text
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                if (this.type === 'base') {
+                    // FontAwesome icon scaling
+                    ctx.font = `${24 * STATE.scale}px FontAwesome`;
+                    ctx.fillText(this.owner === 1 ? '\uf015' : '\uf6f1', this.x, this.y);
+                } else {
+                    if (this.value > 0) {
+                        ctx.font = `bold ${16 * STATE.scale}px Nunito`;
+                        ctx.fillText(this.value, this.x, this.y);
+                    } else {
+                        ctx.font = `${14 * STATE.scale}px FontAwesome`;
+                        ctx.fillText(this.owner === 0 ? '\uf023' : '\uf132', this.x, this.y);
+                    }
+                }
+            }
+        }
+
+        class Troop {
+            constructor(owner, count, sourceNode, targetNode) {
+                this.owner = owner;
+                this.count = count;
+                this.sourceId = sourceNode.id;
+                this.targetId = targetNode.id;
+                this.x = sourceNode.x;
+                this.y = sourceNode.y;
+                this.targetX = targetNode.x;
+                this.targetY = targetNode.y;
+                this.dead = false;
+                
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                this.speed = CONFIG.troopSpeed;
+            }
+
+            update() {
+                if (this.dead) return;
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const distRemaining = Math.sqrt(dx*dx + dy*dy);
+
+                if (distRemaining < 5 * STATE.scale) {
+                    this.arrive();
+                } else {
+                    const moveX = (dx / distRemaining) * this.speed * (STATE.scale < 1 ? 1 : STATE.scale * 0.8); // Adjust speed slightly for huge screens
+                    const moveY = (dy / distRemaining) * this.speed * (STATE.scale < 1 ? 1 : STATE.scale * 0.8);
+                    this.x += moveX;
+                    this.y += moveY;
+                }
+                this.checkCombat();
+            }
+
+            checkCombat() {
+                for (let t of STATE.troops) {
+                    if (t !== this && t.owner !== this.owner && !t.dead) {
+                        const dist = Math.sqrt(Math.pow(this.x - t.x, 2) + Math.pow(this.y - t.y, 2));
+                        if (dist < 20 * STATE.scale) {
+                            game.createExplosion((this.x+t.x)/2, (this.y+t.y)/2, '#fbbf24');
+                            if (this.count > t.count) {
+                                this.count -= t.count; t.count = 0; t.dead = true;
+                            } else if (t.count > this.count) {
+                                t.count -= this.count; this.count = 0; this.dead = true;
+                            } else {
+                                this.count = 0; this.dead = true; t.count = 0; t.dead = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            arrive() {
+                this.dead = true;
+                const node = STATE.nodes.find(n => n.id === this.targetId);
+                if (!node) return;
+
+                if (node.owner === this.owner) {
+                    node.value += this.count;
+                } else {
+                    game.createExplosion(node.x, node.y, '#ffffff');
+                    if (this.count > node.value) {
+                        if (node.type === 'base') {
+                            game.damageBase(node.owner, this.count - node.value);
+                        } else {
+                            node.owner = this.owner;
+                            node.value = this.count - node.value;
+                        }
+                    } else {
+                        node.value -= this.count;
+                    }
+                }
+
+                // In Multi turn mode, check end of round after troop arrival
+                if(STATE.mode === 'multi') {
+                   // We delay slightly to let visual settle
+                   setTimeout(() => game.turnCheckRoundEnd(), 500);
+                }
+            }
+
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 10 * STATE.scale, 0, Math.PI * 2);
+                ctx.fillStyle = this.owner === 1 ? '#3b82f6' : '#ef4444';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1 * STATE.scale;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = `bold ${10 * STATE.scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.count, this.x, this.y);
+            }
+        }
+
+        const ui = {
+            showMenu() {
+                document.getElementById('splashScreen').classList.add('hidden');
+                document.getElementById('levelSelectScreen').classList.add('hidden');
+                document.getElementById('menuScreen').classList.remove('hidden');
+                document.getElementById('menuScreen').classList.add('flex');
+            },
+            showLevelSelect() {
+                STATE.p1Name = document.getElementById('p1Name').value || "Hero";
+                STATE.p2Name = document.getElementById('p2Name').value || "Rival";
+                
+                // Get Rounds & Time
+                STATE.turnMaxRounds = parseInt(document.getElementById('totalRounds').value);
+                const minutes = parseInt(document.getElementById('timeLimit').value);
+                STATE.timeLimit = minutes * 60; // convert to seconds
+
+                const grid = document.getElementById('levelGrid');
+                grid.innerHTML = '';
+                PLANETS.forEach((p, i) => {
+                    const btn = document.createElement('div');
+                    
+                    // Gunakan hanya bagian border dari p.color, background akan ditimpa gambar
+                    const borderColor = p.color.split(' ')[0]; // Contoh: border-orange-500
+                    const imgUrl = `https://raw.githubusercontent.com/rizqu24/kb/refs/heads/main/${i+1}.png`;
+
+                    btn.className = `planet-btn group cursor-pointer rounded-xl border-2 transition-all flex flex-col items-center justify-center relative overflow-hidden h-32 md:h-40 ${borderColor} bg-gray-800`;
+                    
+                    // Set gambar sebagai background
+                    btn.style.backgroundImage = `url('${imgUrl}')`;
+                    btn.style.backgroundSize = 'cover';
+                    btn.style.backgroundPosition = 'center';
+
+                    btn.innerHTML = `
+                        <div class="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-all z-0"></div>
+                        <h3 class="font-bold text-xl md:text-2xl uppercase z-10 drop-shadow-md text-white relative text-center title-font tracking-wide leading-none mb-1">${p.name}</h3>
+                        <p class="text-xs md:text-sm text-gray-100 z-10 relative bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">${p.desc}</p>
+                    `;
+                    btn.onclick = () => game.start(i);
+                    grid.appendChild(btn);
+                });
+                document.getElementById('menuScreen').classList.add('hidden');
+                document.getElementById('levelSelectScreen').classList.remove('hidden');
+                document.getElementById('levelSelectScreen').classList.add('flex');
+            },
+            setMode(mode) {
+                STATE.mode = mode;
+                const s = document.getElementById('btnModeSingle');
+                const m = document.getElementById('btnModeMulti');
+                const timeInput = document.getElementById('timeInputGroup');
+                const roundInput = document.getElementById('roundInputGroup');
+
+                if (mode==='single') {
+                    s.classList.replace('bg-gray-700','bg-blue-600'); s.classList.add('border-yellow-400');
+                    m.classList.replace('bg-blue-600','bg-gray-700'); m.classList.remove('border-yellow-400');
+                    document.getElementById('p2InputGroup').classList.add('hidden');
+                    roundInput.classList.add('hidden');
+                    timeInput.classList.remove('hidden'); // Show time input for single player
+                } else {
+                    m.classList.replace('bg-gray-700','bg-blue-600'); m.classList.add('border-yellow-400');
+                    s.classList.replace('bg-blue-600','bg-gray-700'); s.classList.remove('border-yellow-400');
+                    document.getElementById('p2InputGroup').classList.remove('hidden');
+                    roundInput.classList.remove('hidden');
+                    timeInput.classList.add('hidden'); // Hide time input for multi player
+                }
+            },
+            updateHUD() {
+                document.getElementById('p1Troops').innerText = STATE.p1Resource;
+                document.getElementById('hudP1HP').innerText = Math.ceil(STATE.p1HP) + '%';
+                document.getElementById('barP1').style.width = Math.max(0, STATE.p1HP) + '%';
+                
+                document.getElementById('hudP2HP').innerText = Math.ceil(STATE.p2HP) + '%';
+                document.getElementById('barP2').style.width = Math.max(0, STATE.p2HP) + '%';
+                
+                if (STATE.mode === 'multi') document.getElementById('p2Troops').innerText = STATE.p2Resource;
+                
+                let timeStr = "";
+                if (STATE.mode === 'single') {
+                    // Countdown Timer Logic
+                    let remaining = Math.max(0, STATE.timeLimit - STATE.timer);
+                    const m = Math.floor(remaining/60).toString().padStart(2,'0');
+                    const s = (remaining%60).toString().padStart(2,'0');
+                    timeStr = `${m}:${s}`;
+                    if(remaining <= 30) {
+                        document.getElementById('timerDisplay').classList.add('text-red-500', 'animate-pulse');
+                    } else {
+                        document.getElementById('timerDisplay').classList.remove('text-red-500', 'animate-pulse');
+                    }
+                } else {
+                    // Multi: Show Gather Timer if in phase 1, else Turn Info
+                    if (STATE.turnPhase === 'gather') {
+                         timeStr = `00:${STATE.turnGatherTimer.toString().padStart(2,'0')}`;
+                         document.getElementById('timerDisplay').className = "font-mono text-xl md:text-2xl lg:text-3xl text-red-400 font-bold block leading-none animate-pulse";
+                    } else {
+                        timeStr = STATE.turnActivePlayer === 1 ? "GILIRAN P1" : "GILIRAN P2";
+                        document.getElementById('timerDisplay').className = "font-mono text-xl md:text-xl lg:text-2xl text-yellow-400 font-bold block leading-none";
+                    }
+                }
+                document.getElementById('timerDisplay').innerText = timeStr;
+            },
+            showNotification(title, desc, duration=2000) {
+                const modal = document.getElementById('notificationModal');
+                document.getElementById('notifTitle').innerText = title;
+                document.getElementById('notifDesc').innerText = desc;
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, duration);
+            },
+            updateTurnVisuals() {
+                const p1Wrap = document.getElementById('hudP1Wrapper');
+                const p2Wrap = document.getElementById('hudP2Wrapper');
+                const btnSkipP1 = document.getElementById('btnSkipP1');
+                const btnSkipP2 = document.getElementById('btnSkipP2');
+                const btnMathP1 = document.getElementById('btnMathP1');
+                const btnMathP2 = document.getElementById('btnMathP2');
+
+                // Reset
+                p1Wrap.className = "w-1/3 max-w-sm transition-all duration-300 p-3 rounded-xl border border-transparent";
+                p2Wrap.className = "w-1/3 max-w-sm text-right transition-all duration-300 p-3 rounded-xl border border-transparent";
+                btnSkipP1.classList.add('hidden');
+                btnSkipP2.classList.add('hidden');
+                btnMathP1.classList.add('hidden');
+                btnMathP2.classList.add('hidden');
+
+                if (STATE.turnPhase === 'gather') {
+                    // Show Math Buttons
+                    btnMathP1.classList.remove('hidden');
+                    btnMathP2.classList.remove('hidden');
+                } else if (STATE.turnPhase === 'move') {
+                    // Show Skip buttons based on turn
+                    if (STATE.turnActivePlayer === 1) {
+                        p1Wrap.classList.add('active-turn', 'bg-blue-900/50');
+                        p2Wrap.classList.add('inactive-turn');
+                        btnSkipP1.classList.remove('hidden');
+                    } else {
+                        p2Wrap.classList.add('active-turn', 'bg-red-900/50');
+                        p1Wrap.classList.add('inactive-turn');
+                        btnSkipP2.classList.remove('hidden');
+                    }
+                }
+            }
+        };
+
+        const mathGame = {
+            p1Answer: "", p2Answer: "",
+            showModal(playerId) {
+                if (STATE.isPaused) return;
+                // In Multiplayer, only allow math in gather phase
+                if (STATE.mode === 'multi' && STATE.turnPhase !== 'gather') return;
+
+                const modalId = playerId === 1 ? 'mathModalP1' : 'mathModalP2';
+                document.getElementById(modalId).classList.remove('hidden');
+                this.generateQuestion(playerId);
+            },
+            generateQuestion(playerId) {
+                const type = document.getElementById('difficulty').value;
+                const elQ = document.getElementById(playerId === 1 ? 'mathQuestionP1' : 'mathQuestionP2');
+                const elAns = document.getElementById(playerId === 1 ? 'mathAnswersP1' : 'mathAnswersP2');
+                let q, a;
+                
+                const r = n => Math.floor(Math.random()*n)+2;
+                if (type.includes('frac')) {
+                    const n1=r(3),d1=r(3)+1, n2=r(3),d2=r(3)+1;
+                    if(type.includes('mult')){
+                        q = `${n1}/${d1} x ${n2}/${d2}`; a = `${n1*n2}/${d1*d2}`;
+                    } else {
+                        q = `${n1}/${d1} : ${n2}/${d2}`; a = `${n1*d2}/${d1*n2}`;
+                    }
+                } else {
+                    const x=r(9), y=r(9);
+                    if(type==='mult' || (type==='mixed' && Math.random()>.5)) {
+                        q = `${x} x ${y}`; a = (x*y).toString();
+                    } else {
+                        const z=x*y; q = `${z} : ${x}`; a = y.toString();
+                    }
+                }
+                
+                if (playerId===1) this.p1Answer = a; else this.p2Answer = a;
+                elQ.innerText = q + " = ?";
+                elAns.innerHTML = '';
+                
+                const opts = new Set([a]);
+                while(opts.size < 4) {
+                    if(a.includes('/')) {
+                        const [n,d] = a.split('/').map(Number);
+                        opts.add(`${n+r(3)}/${d+r(3)}`);
+                    } else {
+                        opts.add((parseInt(a)+r(10)-5).toString());
+                    }
+                }
+                [...opts].sort(()=>Math.random()-.5).forEach(o => {
+                    const b = document.createElement('button');
+                    b.className = "bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg text-sm md:text-base";
+                    b.innerText = o;
+                    b.onclick = () => this.check(playerId, o);
+                    elAns.appendChild(b);
+                });
+            },
+            check(playerId, val) {
+                const correct = playerId === 1 ? this.p1Answer : this.p2Answer;
+                if(val === correct) {
+                    if(playerId === 1) STATE.p1Resource += 10; else STATE.p2Resource += 10;
+                    ui.updateHUD();
+                    this.closeModal(playerId);
+                } else {
+                    const modal = document.getElementById(playerId === 1 ? 'mathModalP1' : 'mathModalP2');
+                    modal.classList.replace(playerId===1?'border-blue-400':'border-red-400', 'border-white');
+                    setTimeout(()=>modal.classList.replace('border-white', playerId===1?'border-blue-400':'border-red-400'), 300);
+                }
+            },
+            closeModal(playerId) { 
+                document.getElementById(playerId === 1 ? 'mathModalP1' : 'mathModalP2').classList.add('hidden'); 
+            }
+        };
+
+        const game = {
+            canvas: null, ctx: null,
+            timerInterval: null,
+            bgImage: new Image(),
+            
+            init() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.bgImage.src = 'https://raw.githubusercontent.com/rizqu24/asset-game-mpiku/refs/heads/main/backgroun2.jpg';
+                window.addEventListener('resize', () => this.resize());
+                
+                // Multi-touch Events
+                this.canvas.addEventListener('touchstart', e => this.handleTouch(e), {passive: false});
+                this.canvas.addEventListener('mousedown', e => this.handleMouse(e));
+                
+                // Initialize default mode visibility
+                ui.setMode('single');
+            },
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                // SCALING LOGIC FOR RESPONSIVENESS
+                // Base resolution: 1280x720 (Standard HD)
+                // If screen is larger (e.g. TV 4K), elements scale up.
+                // If screen is smaller (e.g. Mobile), elements scale properly.
+                const scaleX = this.canvas.width / 1280;
+                const scaleY = this.canvas.height / 720;
+                // Use the smaller scale factor to ensure elements fit on screen
+                STATE.scale = Math.min(scaleX, scaleY);
+
+                if (STATE.nodes.length) {
+                    STATE.nodes.forEach(n => n.updatePos(this.canvas.width, this.canvas.height));
+                }
+            },
+            
+            start(lvlIdx) {
+                const lvl = PLANETS[lvlIdx];
+                STATE.currentLevel = lvl;
+                
+                // Fixed: Removed incorrect ID reference
+                document.getElementById('hudP1Name').innerText = STATE.p1Name;
+                document.getElementById('hudP2Name').innerText = STATE.p2Name;
+                
+                // Reset State
+                STATE.p1HP = STATE.p2HP = 100;
+                
+                // --- MODIFIKASI: Set Pasukan Awal (Multiplayer = 0, Single = 20) ---
+                if (STATE.mode === 'multi') {
+                    STATE.p1Resource = STATE.p2Resource = 0;
+                } else {
+                    STATE.p1Resource = STATE.p2Resource = 20; 
+                }
+
+                STATE.troops = [];
+                STATE.p1SelectedNodeId = null;
+                STATE.p2SelectedNodeId = null;
+                STATE.isPlaying = true; STATE.isPaused = false;
+                STATE.timer = 0;
+
+                // Mode Specific Setup
+                if(STATE.mode==='multi') {
+                    document.getElementById('p2Controls').classList.remove('hidden');
+                    document.getElementById('phaseDisplay').classList.remove('hidden');
+                    document.getElementById('phaseDisplay').innerText = "MENYIAPKAN...";
+                    STATE.turnCurrentRound = 1;
+                    this.startTurnRound(1);
+                } else {
+                    document.getElementById('p2Controls').classList.add('hidden');
+                    document.getElementById('phaseDisplay').classList.add('hidden');
+                    document.getElementById('btnMathP1').classList.remove('hidden');
+                    document.getElementById('roundDisplay').innerText = "PLANET " + lvl.name;
+                }
+
+                STATE.nodes = lvl.nodes.map(n => new Node(n));
+                this.resize(); // Trigger scaling calculation
+
+                document.getElementById('levelSelectScreen').classList.add('hidden');
+                document.getElementById('gameScreen').classList.remove('hidden');
+                document.getElementById('gameOverModal').classList.add('hidden');
+
+                this.loop();
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    this.tick();
+                }, 1000);
+
+                if (STATE.mode === 'single') this.scheduleBot();
+            },
+
+            tick() {
+                if(!STATE.isPlaying || STATE.isPaused) return;
+
+                if (STATE.mode === 'single') {
+                    STATE.timer++;
+                    // Check Time Limit
+                    if (STATE.timer >= STATE.timeLimit) {
+                        this.endGameByScore();
+                    }
+                } else {
+                    // Multiplayer Logic
+                    if (STATE.turnPhase === 'gather') {
+                        STATE.turnGatherTimer--;
+                        if (STATE.turnGatherTimer <= 0) {
+                            this.startMovementPhase();
+                        }
+                    }
+                }
+                ui.updateHUD();
+            },
+
+            // --- MULTIPLAYER TURN LOGIC ---
+            startTurnRound(roundNum) {
+                STATE.turnCurrentRound = roundNum;
+                STATE.turnPhase = 'gather';
+                STATE.turnGatherTimer = 30;
+                // STATE.p1Resource = 0; // HAPUS/KOMENTAR: Jangan reset ke 0 setiap ronde agar akumulasi
+                // Prompt says "Mengumpulkan pasukan sebanyak-banyaknya". Usually means add to existing.
+
+                document.getElementById('roundDisplay').innerText = `PUTARAN ${STATE.turnCurrentRound} / ${STATE.turnMaxRounds}`;
+                document.getElementById('phaseDisplay').innerText = "FASE PENGUMPULAN (JAWAB SOAL)";
+                
+                ui.showNotification(`PUTARAN ${roundNum}`, "FASE 1: KUMPULKAN PASUKAN! (30 DETIK)");
+                ui.updateTurnVisuals();
+                ui.updateHUD();
+            },
+
+            startMovementPhase() {
+                // Auto close modals if open
+                mathGame.closeModal(1);
+                mathGame.closeModal(2);
+
+                STATE.turnPhase = 'move';
+                STATE.turnActivePlayer = 1; // P1 starts first
+                document.getElementById('phaseDisplay').innerText = "FASE PERGERAKAN";
+                
+                ui.showNotification("FASE 2", "PERGERAKAN PASUKAN");
+                ui.updateTurnVisuals();
+                ui.updateHUD();
+            },
+
+            skipTurn(playerId) {
+                if (STATE.turnPhase !== 'move' || STATE.turnActivePlayer !== playerId) return;
+                
+                // Switch Turn
+                STATE.turnActivePlayer = (STATE.turnActivePlayer === 1) ? 2 : 1;
+                ui.updateTurnVisuals();
+                ui.updateHUD();
+
+                // Check if round should end (Both have 0 troops in base)
+                this.turnCheckRoundEnd();
+            },
+
+            turnCheckRoundEnd() {
+                // If troops are moving, wait for them to land
+                if (STATE.troops.length > 0) return;
+
+                // Prompt: "Ketika ke 2 player jumlah pasukan tersedia di home base nya 0 akan muncul lagi pop up putaran selanjutnya"
+                // p1Resource and p2Resource are effectively "Troops in Home Base" because clicking base sends from Resource.
+                if (STATE.p1Resource <= 0 && STATE.p2Resource <= 0) {
+                    if (STATE.turnCurrentRound < STATE.turnMaxRounds) {
+                        this.startTurnRound(STATE.turnCurrentRound + 1);
+                    } else {
+                        this.endGameByScore();
+                    }
+                }
+            },
+
+            endGameByScore() {
+                // Win Condition 1: HP
+                if (STATE.p1HP > STATE.p2HP) this.endGame(1, "Menang jumlah HP!");
+                else if (STATE.p2HP > STATE.p1HP) this.endGame(2, "Menang jumlah HP!");
+                else {
+                    // Tie Breaker: Total Troops (Resource + On Map Nodes)
+                    const p1Total = STATE.p1Resource + STATE.nodes.filter(n=>n.owner===1).reduce((a,b)=>a+b.value,0);
+                    const p2Total = STATE.p2Resource + STATE.nodes.filter(n=>n.owner===2).reduce((a,b)=>a+b.value,0);
+                    
+                    if (p1Total > p2Total) this.endGame(1, "Menang jumlah Pasukan!");
+                    else if (p2Total > p1Total) this.endGame(2, "Menang jumlah Pasukan!");
+                    else this.endGame(0, "SERI! Kekuatan seimbang.");
+                }
+            },
+
+            // --- EXISTING LOGIC ---
+
+            scheduleBot() {
+                if(!STATE.isPlaying || STATE.mode !== 'single') return;
+                const hp = STATE.p2HP;
+                const delay = hp > 50 ? 10000 : (hp > 20 ? 7000 : 4000); 
+                STATE.botTimerId = setTimeout(() => {
+                    this.botThink();
+                    this.scheduleBot();
+                }, delay);
+            },
+
+            botThink() {
+                if(STATE.isPaused) return;
+                STATE.p2Resource += 15;
+                const owned = STATE.nodes.filter(n => n.owner === 2 && n.value > 5); 
+                const base = STATE.nodes.find(n => n.id === 1); 
+                let source = null;
+                if (base && STATE.p2Resource > 10) source = base;
+                else if (owned.length > 0) source = owned[Math.floor(Math.random()*owned.length)];
+
+                if (source) {
+                    const edges = STATE.currentLevel.edges.filter(e => e.includes(source.id));
+                    const neighbors = edges.map(e => {
+                        const id = e[0] === source.id ? e[1] : e[0];
+                        return STATE.nodes.find(n => n.id === id);
+                    });
+                    const targets = neighbors.sort((a,b) => (a.owner === 1 ? -1 : 1));
+                    
+                    if (targets.length > 0) {
+                        const target = targets[0];
+                        let count = source.type === 'base' ? STATE.p2Resource : source.value;
+                        if (source.type === 'base') {
+                             if (count > 10) { STATE.p2Resource -= 10; count = 10; } else count = 0;
+                        } else { source.value = 0; }
+                        
+                        if (count > 0) STATE.troops.push(new Troop(2, count, source, target));
+                    }
+                }
+                ui.updateHUD();
+            },
+
+            // Unified Logic Input
+            processInput(x, y) {
+                if(!STATE.isPlaying || STATE.isPaused) return;
+
+                // In Multi Gather Phase, map interaction is disabled
+                if (STATE.mode === 'multi' && STATE.turnPhase === 'gather') return;
+
+                const clickedNode = STATE.nodes.find(n => {
+                    const dx = x - n.x;
+                    const dy = y - n.y;
+                    // Hitbox scales with node size
+                    const r = (n.type === 'base' ? CONFIG.baseNodeRadius : CONFIG.postNodeRadius) * n.sizeMult * STATE.scale;
+                    return (dx*dx + dy*dy) <= r*r * 2.5; 
+                });
+
+                if (!clickedNode) return;
+
+                // In Multi Move Phase, check turn
+                if (STATE.mode === 'multi') {
+                    if (STATE.turnActivePlayer === 1) this.checkPlayerAction(1, clickedNode);
+                    else if (STATE.turnActivePlayer === 2) this.checkPlayerAction(2, clickedNode);
+                } else {
+                    // Single Player
+                    this.checkPlayerAction(1, clickedNode);
+                }
+            },
+
+            checkPlayerAction(pid, node) {
+                // Ensure player only interacts if it's their turn (redundant check but safe)
+                if (STATE.mode === 'multi' && STATE.turnActivePlayer !== pid) return;
+
+                const currentSelId = pid === 1 ? STATE.p1SelectedNodeId : STATE.p2SelectedNodeId;
+                
+                // 1. CEK APAKAH ADA SELEKSI (SOURCE) YANG AKTIF?
+                if (currentSelId !== null) {
+                    const source = STATE.nodes.find(n => n.id === currentSelId);
+                    
+                    // SECURITY CHECK: Pastikan Source masih milik pemain ini
+                    if (source.owner !== pid) {
+                        if (pid === 1) STATE.p1SelectedNodeId = null;
+                        else STATE.p2SelectedNodeId = null;
+                        return;
+                    }
+
+                    // Cek koneksi ke target
+                    const isConnected = STATE.currentLevel.edges.some(e => 
+                        (e[0]===currentSelId && e[1]===node.id) || 
+                        (e[1]===currentSelId && e[0]===node.id)
+                    );
+
+                    // Jika terhubung -> KIRIM PASUKAN
+                    if (isConnected) {
+                        let count = 0;
+                        let moved = false;
+
+                        if (source.type === 'base') {
+                            const res = pid === 1 ? STATE.p1Resource : STATE.p2Resource;
+                            // --- MODIFIKASI: LIMIT PENGIRIMAN DARI BASE (MAX 10) ---
+                            count = Math.min(res, 10); 
+                            
+                            if (count > 0) {
+                                if (pid===1) STATE.p1Resource -= count; else STATE.p2Resource -= count;
+                                moved = true;
+                            }
+                        } else {
+                            // DARI POS: KIRIM SEMUA
+                            count = source.value;
+                            if (count > 0) {
+                                source.value = 0;
+                                moved = true;
+                            }
+                        }
+
+                        if (moved) {
+                            STATE.troops.push(new Troop(pid, count, source, node));
+                            
+                            // IF MULTIPLAYER, SWITCH TURN AFTER MOVE
+                            if (STATE.mode === 'multi') {
+                                STATE.turnActivePlayer = (STATE.turnActivePlayer === 1) ? 2 : 1;
+                                ui.updateTurnVisuals();
+                            }
+                        }
+                        
+                        // Reset Selection
+                        if (pid === 1) STATE.p1SelectedNodeId = null;
+                        else STATE.p2SelectedNodeId = null;
+                        
+                        ui.updateHUD();
+                        return; 
+                    }
+                }
+
+                // 2. LOGIKA SELEKSI
+                // Player can select their own node
+                if (node.owner === pid) {
+                    // Only select if it has value (except base, base always selectable if it has resource)
+                    let hasVal = node.value > 0;
+                    if (node.type === 'base') {
+                        hasVal = pid === 1 ? STATE.p1Resource > 0 : STATE.p2Resource > 0;
+                    }
+
+                    if (hasVal) {
+                        if (pid === 1) STATE.p1SelectedNodeId = node.id;
+                        else STATE.p2SelectedNodeId = node.id;
+                    }
+                } else {
+                    // Batalkan seleksi jika klik sembarang
+                    if (pid === 1) STATE.p1SelectedNodeId = null;
+                    else STATE.p2SelectedNodeId = null;
+                }
+            },
+
+            handleMouse(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.processInput(e.clientX - rect.left, e.clientY - rect.top);
+            },
+
+            handleTouch(e) {
+                e.preventDefault(); // Mencegah scroll/zoom
+                const rect = this.canvas.getBoundingClientRect();
+                
+                // Iterasi semua sentuhan yang berubah (baru ditekan)
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const t = e.changedTouches[i];
+                    this.processInput(t.clientX - rect.left, t.clientY - rect.top);
+                }
+            },
+
+            damageBase(owner, dmg) {
+                // --- MODIFIKASI: DAMAGE 1:1 ---
+                if (owner === 1) STATE.p1HP -= dmg; 
+                else STATE.p2HP -= dmg;
+                ui.updateHUD();
+                
+                if (STATE.p1HP <= 0 || STATE.p2HP <= 0) {
+                    this.endGame(STATE.p2HP <= 0 ? 1 : 2, "Markas Hancur!");
+                }
+            },
+
+            createExplosion(x, y, color) { },
+
+            togglePause() {
+                if(!STATE.isPlaying) return;
+                STATE.isPaused = !STATE.isPaused;
+                const m = document.getElementById('pauseModal');
+                STATE.isPaused ? m.classList.remove('hidden') : m.classList.add('hidden');
+            },
+
+            quit() { 
+                // Return to Menu instead of Reload
+                STATE.isPlaying = false;
+                STATE.isPaused = false;
+                
+                // Stop loops
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                if (STATE.botTimerId) clearTimeout(STATE.botTimerId);
+
+                // Hide Game Elements
+                document.getElementById('gameScreen').classList.add('hidden');
+                document.getElementById('pauseModal').classList.add('hidden');
+                document.getElementById('gameOverModal').classList.add('hidden');
+                document.getElementById('levelSelectScreen').classList.add('hidden');
+                
+                // Show Menu
+                ui.showMenu();
+            },
+
+            endGame(winner, reason="...") {
+                STATE.isPlaying = false;
+                if (this.timerInterval) clearInterval(this.timerInterval);
+
+                const m = document.getElementById('gameOverModal');
+                const t = document.getElementById('winnerText');
+                const d = document.getElementById('winnerDesc');
+                
+                if (winner === 0) {
+                     t.innerText = "DRAW / SERI";
+                     t.className = "text-4xl font-bold text-gray-400 mb-4";
+                     d.innerText = reason;
+                } else if (winner === 1) {
+                    t.innerText = "PLAYER 1 MENANG!";
+                    t.className = "text-4xl font-bold text-blue-400 mb-4";
+                    d.innerText = `Komandan ${STATE.p1Name} mendominasi. ${reason}`;
+                } else {
+                    t.innerText = (STATE.mode === 'multi' ? "PLAYER 2" : "KOMPUTER") + " MENANG!";
+                    t.className = "text-4xl font-bold text-red-400 mb-4";
+                    d.innerText = `Markas P1 jatuh. ${reason}`;
+                }
+                m.classList.remove('hidden');
+            },
+
+            loop() {
+                if (!STATE.isPlaying) return;
+                requestAnimationFrame(() => this.loop());
+                if (STATE.isPaused) return;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                if (this.bgImage.complete) {
+                    this.ctx.drawImage(this.bgImage, 0, 0, this.canvas.width, this.canvas.height);
+                }
+                
+                this.ctx.fillStyle = 'rgba(17, 24, 39, 0.7)'; 
+                this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+
+                this.ctx.lineWidth = 4 * STATE.scale; // Scale line width
+                STATE.currentLevel.edges.forEach(e => {
+                    const n1 = STATE.nodes.find(n => n.id === e[0]);
+                    const n2 = STATE.nodes.find(n => n.id === e[1]);
+                    
+                    const grad = this.ctx.createLinearGradient(n1.x, n1.y, n2.x, n2.y);
+                    grad.addColorStop(0, n1.owner === 1 ? '#1e3a8a' : (n1.owner === 2 ? '#7f1d1d' : '#374151'));
+                    grad.addColorStop(1, n2.owner === 1 ? '#1e3a8a' : (n2.owner === 2 ? '#7f1d1d' : '#374151'));
+                    
+                    this.ctx.strokeStyle = grad;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(n1.x, n1.y);
+                    this.ctx.lineTo(n2.x, n2.y);
+                    this.ctx.stroke();
+                });
+
+                STATE.nodes.forEach(n => n.draw(this.ctx));
+                STATE.troops.forEach(t => { t.update(); t.draw(this.ctx); });
+                STATE.troops = STATE.troops.filter(t => !t.dead);
+            }
+        };
+
+        window.onload = () => { game.init(); }; 
+    </script>
+</body>
+</html>
