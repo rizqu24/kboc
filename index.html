@@ -15,6 +15,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            /* Warna dan variabel global jika diperlukan */
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
             overflow: hidden;
@@ -26,23 +30,24 @@
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            height: 100vh; /* Pastikan body 100% tinggi layar */
+            height: 100vh; 
             width: 100vw;
             margin: 0;
             padding: 0;
         }
         
+        /* Menggunakan REM agar berskala dinamis mengikuti root font-size */
         .title-font {
             font-family: 'Fredoka One', cursive;
-            text-shadow: 4px 4px 0px #000;
+            text-shadow: 0.25rem 0.25rem 0px #000;
         }
 
         .game-btn {
             transition: all 0.1s;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+            box-shadow: 0 0.25rem 0 rgba(0,0,0,0.5);
         }
         .game-btn:active {
-            transform: translateY(4px);
+            transform: translateY(0.25rem);
             box-shadow: 0 0 0 rgba(0,0,0,0.5);
         }
 
@@ -60,38 +65,38 @@
             border-color: #fbbf24;
         }
         
-        /* Selected Node Pulse */
+        /* Selected Node Pulse (Menggunakan REM untuk ketebalan) */
         @keyframes pulse-ring-p1 {
             0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            70% { box-shadow: 0 0 0 1rem rgba(59, 130, 246, 0); }
             100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
         @keyframes pulse-ring-p2 {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            70% { box-shadow: 0 0 0 1rem rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
         .glass-panel {
             background: rgba(17, 24, 39, 0.85);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(0.5rem);
         }
 
-        /* Panel Soal Compact */
+        /* Panel Soal Compact - Ukuran diubah ke REM */
         .math-panel {
             background: rgba(31, 41, 55, 0.95);
-            border: 3px solid;
+            border: 0.2rem solid;
             border-radius: 1rem;
             padding: 1rem;
-            width: 280px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            width: 18rem; /* Tadinya fixed px, sekarang rem */
+            box-shadow: 0 0.6rem 1.5rem rgba(0,0,0,0.8);
             animation: popIn 0.2s ease-out;
             pointer-events: auto; 
         }
 
         .active-turn {
-            border: 3px solid #fbbf24;
-            box-shadow: 0 0 15px #fbbf24;
+            border: 0.2rem solid #fbbf24;
+            box-shadow: 0 0 1rem #fbbf24;
             transform: scale(1.02);
         }
         .inactive-turn {
@@ -123,24 +128,25 @@
     </div>
 
     <!-- GAME CONTAINER (FIXED FULL SCREEN) -->
-    <div id="gameContainer" class="fixed inset-0 w-full h-full overflow-hidden">
+    <div id="gameContainer" class="fixed inset-0 w-full h-full overflow-hidden flex items-center justify-center">
 
         <!-- 1. SPLASH SCREEN -->
-        <div id="splashScreen" class="absolute inset-0 z-50 flex flex-col items-center justify-center">
+        <div id="splashScreen" class="absolute inset-0 z-50 flex flex-col items-center justify-center w-full h-full">
             <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-            <div class="relative z-10 text-center px-4 w-full h-full flex flex-col items-center justify-center">
-                <h1 class="title-font text-5xl md:text-7xl lg:text-8xl text-yellow-400 mb-2 tracking-wide drop-shadow-lg">KOMANDAN BINTANG</h1>
-                <h2 class="title-font text-3xl md:text-5xl lg:text-6xl text-blue-400 mb-10 drop-shadow-md">OPERASI CERDAS</h2>
-                <button onclick="ui.showMenu()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-12 lg:py-6 lg:px-16 rounded-full text-2xl lg:text-4xl border-b-4 border-green-700 animate-bounce">
+            <div class="relative z-10 text-center px-4 w-full flex flex-col items-center justify-center">
+                <!-- Menggunakan kelas Tailwind responsive, tapi ukuran dasar akan diatur oleh JS Scale -->
+                <h1 class="title-font text-6xl text-yellow-400 mb-2 tracking-wide drop-shadow-lg">KOMANDAN BINTANG</h1>
+                <h2 class="title-font text-4xl text-blue-400 mb-10 drop-shadow-md">OPERASI CERDAS</h2>
+                <button onclick="ui.showMenu()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-12 rounded-full text-2xl border-b-4 border-green-700 animate-bounce">
                     <i class="fas fa-play mr-2"></i> MULAI
                 </button>
             </div>
         </div>
 
         <!-- 2. MAIN MENU -->
-        <div id="menuScreen" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center">
-            <div class="glass-panel p-8 rounded-2xl shadow-2xl border-4 border-blue-500 max-w-lg w-full mx-4 modal-content overflow-y-auto max-h-[90vh]">
-                <h2 class="title-font text-3xl lg:text-4xl text-center mb-6 text-blue-300">Konfigurasi Misi</h2>
+        <div id="menuScreen" class="hidden absolute inset-0 z-40 flex-col items-center justify-center w-full h-full">
+            <div class="glass-panel p-8 rounded-2xl shadow-2xl border-4 border-blue-500 w-[90%] max-w-[32rem] modal-content overflow-y-auto max-h-[90vh]">
+                <h2 class="title-font text-3xl text-center mb-6 text-blue-300">Konfigurasi Misi</h2>
                 
                 <div class="mb-4">
                     <label class="block text-gray-400 mb-2 font-bold text-lg">Mode Permainan</label>
@@ -194,18 +200,18 @@
                     </select>
                 </div>
 
-                <button onclick="ui.showLevelSelect()" class="game-btn w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 rounded-xl text-2xl border-b-4 border-yellow-700">
+                <button onclick="ui.showLevelSelect()" class="game-btn w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl text-2xl border-b-4 border-yellow-700">
                     PILIH BASE
                 </button>
             </div>
         </div>
 
         <!-- 2.5 LEVEL SELECTION -->
-        <div id="levelSelectScreen" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center p-4">
+        <div id="levelSelectScreen" class="hidden absolute inset-0 z-40 flex-col items-center justify-center p-4 w-full h-full">
             <div class="absolute inset-0 bg-black/60"></div>
-            <div class="relative z-10 w-full max-w-6xl flex flex-col items-center justify-center h-full">
-                <h2 class="title-font text-3xl md:text-5xl text-yellow-400 mb-4 text-center drop-shadow-md">PILIH TARGET OPERASI</h2>
-                <p class="text-gray-300 mb-8 text-center text-base md:text-xl">Setiap planet memiliki jaringan pos yang unik.</p>
+            <div class="relative z-10 w-full max-w-[64rem] flex flex-col items-center justify-center h-full">
+                <h2 class="title-font text-4xl text-yellow-400 mb-4 text-center drop-shadow-md">PILIH TARGET OPERASI</h2>
+                <p class="text-gray-300 mb-8 text-center text-lg">Setiap planet memiliki jaringan pos yang unik.</p>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full overflow-y-auto max-h-[70vh] px-2" id="levelGrid"></div>
                 <button onclick="ui.showMenu()" class="mt-8 text-gray-300 hover:text-white underline font-bold bg-black/50 px-6 py-3 rounded-full text-lg">Kembali ke Menu</button>
             </div>
@@ -216,50 +222,50 @@
             <canvas id="gameCanvas" class="block w-full h-full touch-none"></canvas>
 
             <!-- Top HUD -->
-            <div class="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-start pointer-events-none z-10">
+            <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start pointer-events-none z-10">
                 <!-- P1 HUD -->
-                <div id="hudP1Wrapper" class="w-1/3 max-w-sm transition-all duration-300 p-3 rounded-xl">
-                    <div class="flex justify-between text-blue-300 font-bold mb-2 text-base md:text-xl lg:text-2xl drop-shadow-md">
+                <div id="hudP1Wrapper" class="w-1/3 max-w-[20rem] transition-all duration-300 p-2 rounded-xl">
+                    <div class="flex justify-between text-blue-300 font-bold mb-1 text-lg drop-shadow-md">
                         <span id="hudP1Name">Player 1</span>
                         <span id="hudP1HP">100/100</span>
                     </div>
-                    <div class="h-4 md:h-6 bg-gray-700/80 rounded-full overflow-hidden border-2 border-gray-500">
+                    <div class="h-4 bg-gray-700/80 rounded-full overflow-hidden border-2 border-gray-500">
                         <div id="barP1" class="h-full bg-blue-500 transition-all duration-300 shadow-[0_0_10px_#3b82f6]" style="width: 100%"></div>
                     </div>
                 </div>
 
                 <!-- Timer & Info Center -->
-                <div class="bg-gray-800/90 px-6 py-3 rounded-2xl border-2 border-gray-600 text-center backdrop-blur-sm shadow-lg mx-2 min-w-[150px]">
-                    <span id="timerDisplay" class="font-mono text-2xl md:text-4xl text-yellow-400 font-bold block leading-none">00:00</span>
-                    <div id="phaseDisplay" class="text-xs md:text-sm lg:text-base text-white font-bold mt-1 hidden">FASE PERSIAPAN</div>
-                    <div id="roundDisplay" class="text-xs md:text-sm lg:text-base text-gray-400 uppercase tracking-widest font-bold mt-1">PLANET</div>
+                <div class="bg-gray-800/90 px-6 py-2 rounded-2xl border-2 border-gray-600 text-center backdrop-blur-sm shadow-lg mx-2 min-w-[10rem]">
+                    <span id="timerDisplay" class="font-mono text-3xl text-yellow-400 font-bold block leading-none">00:00</span>
+                    <div id="phaseDisplay" class="text-sm text-white font-bold mt-1 hidden">FASE PERSIAPAN</div>
+                    <div id="roundDisplay" class="text-sm text-gray-400 uppercase tracking-widest font-bold mt-1">PLANET</div>
                 </div>
 
                 <!-- P2 HUD -->
-                <div id="hudP2Wrapper" class="w-1/3 max-w-sm text-right transition-all duration-300 p-3 rounded-xl">
-                    <div class="flex justify-between text-red-300 font-bold mb-2 text-base md:text-xl lg:text-2xl drop-shadow-md">
+                <div id="hudP2Wrapper" class="w-1/3 max-w-[20rem] text-right transition-all duration-300 p-2 rounded-xl">
+                    <div class="flex justify-between text-red-300 font-bold mb-1 text-lg drop-shadow-md">
                         <span id="hudP2HP">100/100</span>
                         <span id="hudP2Name">Komputer</span>
                     </div>
-                    <div class="h-4 md:h-6 bg-gray-700/80 rounded-full overflow-hidden border-2 border-gray-500">
+                    <div class="h-4 bg-gray-700/80 rounded-full overflow-hidden border-2 border-gray-500">
                         <div id="barP2" class="h-full bg-red-500 transition-all duration-300 shadow-[0_0_10px_#ef4444] ml-auto" style="width: 100%"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Pause Button -->
-            <div class="absolute top-24 left-4 md:top-32 md:left-6 pointer-events-auto z-30">
-                <button onclick="game.togglePause()" class="game-btn bg-gray-700/80 hover:bg-gray-600 text-white w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-gray-400 flex items-center justify-center shadow-lg backdrop-blur-sm">
-                    <i class="fas fa-pause fa-lg md:fa-xl"></i>
+            <div class="absolute top-[6rem] left-4 pointer-events-auto z-30">
+                <button onclick="game.togglePause()" class="game-btn bg-gray-700/80 hover:bg-gray-600 text-white w-12 h-12 rounded-full border-2 border-gray-400 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                    <i class="fas fa-pause fa-lg"></i>
                 </button>
             </div>
 
             <!-- Bottom Controls -->
-            <div class="absolute bottom-4 md:bottom-8 left-0 right-0 px-4 md:px-8 flex justify-between items-end pointer-events-none z-20">
+            <div class="absolute bottom-4 left-0 right-0 px-4 flex justify-between items-end pointer-events-none z-20">
                 <!-- P1 Controls (Kiri) -->
-                <div class="pointer-events-auto flex flex-col gap-3 items-start relative w-1/3">
+                <div class="pointer-events-auto flex flex-col gap-2 items-start relative w-1/3">
                     <!-- Modal Soal P1 -->
-                    <div id="mathModalP1" class="hidden math-panel border-blue-400 mb-2 origin-bottom-left scale-90 md:scale-100 lg:scale-110 origin-bottom-left">
+                    <div id="mathModalP1" class="hidden math-panel border-blue-400 mb-2 origin-bottom-left">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-bold text-blue-300 tracking-widest">LOGISTIK P1</span>
                             <button onclick="mathGame.closeModal(1)" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
@@ -270,32 +276,32 @@
                         <div id="mathAnswersP1" class="grid grid-cols-2 gap-2 text-sm"></div>
                     </div>
 
-                    <div class="flex flex-col gap-2 w-full max-w-[180px] lg:max-w-[220px]">
-                        <div class="bg-blue-900/90 p-4 rounded-xl border-2 border-blue-500 backdrop-blur-md shadow-lg">
-                            <div class="text-xs md:text-sm lg:text-base text-blue-200 uppercase font-bold tracking-wider">Pasukan P1</div>
-                            <div id="p1Troops" class="text-3xl md:text-5xl font-bold text-white title-font drop-shadow-md">0</div>
+                    <div class="flex flex-col gap-2 w-full max-w-[12rem]">
+                        <div class="bg-blue-900/90 p-3 rounded-xl border-2 border-blue-500 backdrop-blur-md shadow-lg">
+                            <div class="text-xs text-blue-200 uppercase font-bold tracking-wider">Pasukan P1</div>
+                            <div id="p1Troops" class="text-4xl font-bold text-white title-font drop-shadow-md">0</div>
                         </div>
                         <!-- Tombol Jawab Soal (Hanya Fase 1 / RTS) -->
-                        <button id="btnMathP1" onclick="mathGame.showModal(1)" class="game-btn bg-blue-600 hover:bg-blue-500 text-white p-3 md:p-5 rounded-xl font-bold shadow-lg border-b-4 border-blue-800 flex items-center gap-3 group w-full">
+                        <button id="btnMathP1" onclick="mathGame.showModal(1)" class="game-btn bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-xl font-bold shadow-lg border-b-4 border-blue-800 flex items-center gap-3 group w-full">
                             <div class="bg-white/20 p-2 rounded-lg group-hover:rotate-12 transition-transform">
-                                <i class="fas fa-brain fa-xl"></i>
+                                <i class="fas fa-brain fa-lg"></i>
                             </div>
                             <div class="text-left leading-tight flex-1">
-                                <div class="text-sm md:text-lg lg:text-xl">Jawab</div>
-                                <div class="text-xs md:text-sm opacity-75 font-mono">+10 Unit</div>
+                                <div class="text-lg">Jawab</div>
+                                <div class="text-xs opacity-75 font-mono">+10 Unit</div>
                             </div>
                         </button>
                         <!-- Tombol SKIP (Hanya Fase 2 Turn Based) -->
-                        <button id="btnSkipP1" onclick="game.skipTurn(1)" class="hidden game-btn bg-gray-600 hover:bg-gray-500 text-white p-4 rounded-xl font-bold shadow-lg border-b-4 border-gray-800 w-full text-lg">
+                        <button id="btnSkipP1" onclick="game.skipTurn(1)" class="hidden game-btn bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-xl font-bold shadow-lg border-b-4 border-gray-800 w-full text-sm">
                             SKIP GILIRAN <i class="fas fa-forward ml-2"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- P2 Controls (Kanan) -->
-                <div id="p2Controls" class="pointer-events-auto flex flex-col gap-3 items-end hidden relative w-1/3">
+                <div id="p2Controls" class="pointer-events-auto flex flex-col gap-2 items-end hidden relative w-1/3">
                     <!-- Modal Soal P2 -->
-                    <div id="mathModalP2" class="hidden math-panel border-red-400 mb-2 origin-bottom-right scale-90 md:scale-100 lg:scale-110 origin-bottom-right">
+                    <div id="mathModalP2" class="hidden math-panel border-red-400 mb-2 origin-bottom-right">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-bold text-red-300 tracking-widest">LOGISTIK P2</span>
                             <button onclick="mathGame.closeModal(2)" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
@@ -306,22 +312,22 @@
                         <div id="mathAnswersP2" class="grid grid-cols-2 gap-2 text-sm"></div>
                     </div>
 
-                    <div class="flex flex-col gap-2 w-full max-w-[180px] lg:max-w-[220px] items-end">
-                        <div class="bg-red-900/90 p-4 rounded-xl border-2 border-red-500 backdrop-blur-md shadow-lg w-full text-right">
-                            <div class="text-xs md:text-sm lg:text-base text-red-200 uppercase font-bold tracking-wider">Pasukan P2</div>
-                            <div id="p2Troops" class="text-3xl md:text-5xl font-bold text-white title-font drop-shadow-md">0</div>
+                    <div class="flex flex-col gap-2 w-full max-w-[12rem] items-end">
+                        <div class="bg-red-900/90 p-3 rounded-xl border-2 border-red-500 backdrop-blur-md shadow-lg w-full text-right">
+                            <div class="text-xs text-red-200 uppercase font-bold tracking-wider">Pasukan P2</div>
+                            <div id="p2Troops" class="text-4xl font-bold text-white title-font drop-shadow-md">0</div>
                         </div>
-                        <button id="btnMathP2" onclick="mathGame.showModal(2)" class="game-btn bg-red-600 hover:bg-red-500 text-white p-3 md:p-5 rounded-xl font-bold shadow-lg border-b-4 border-red-800 flex items-center gap-3 flex-row-reverse group w-full">
+                        <button id="btnMathP2" onclick="mathGame.showModal(2)" class="game-btn bg-red-600 hover:bg-red-500 text-white p-4 rounded-xl font-bold shadow-lg border-b-4 border-red-800 flex items-center gap-3 flex-row-reverse group w-full">
                             <div class="bg-white/20 p-2 rounded-lg group-hover:-rotate-12 transition-transform">
-                                <i class="fas fa-brain fa-xl"></i>
+                                <i class="fas fa-brain fa-lg"></i>
                             </div>
                             <div class="text-right leading-tight flex-1">
-                                <div class="text-sm md:text-lg lg:text-xl">Jawab</div>
-                                <div class="text-xs md:text-sm opacity-75 font-mono">+10 Unit</div>
+                                <div class="text-lg">Jawab</div>
+                                <div class="text-xs opacity-75 font-mono">+10 Unit</div>
                             </div>
                         </button>
                         <!-- Tombol SKIP (Hanya Fase 2 Turn Based) -->
-                        <button id="btnSkipP2" onclick="game.skipTurn(2)" class="hidden game-btn bg-gray-600 hover:bg-gray-500 text-white p-4 rounded-xl font-bold shadow-lg border-b-4 border-gray-800 w-full text-lg">
+                        <button id="btnSkipP2" onclick="game.skipTurn(2)" class="hidden game-btn bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-xl font-bold shadow-lg border-b-4 border-gray-800 w-full text-sm">
                             SKIP GILIRAN <i class="fas fa-forward ml-2"></i>
                         </button>
                     </div>
@@ -330,39 +336,39 @@
 
             <!-- INSTRUCTIONS (Moved Independent Bottom Center) -->
             <div class="absolute bottom-16 left-0 right-0 flex justify-center items-center pointer-events-none z-30">
-                <div id="gameHint" class="bg-black/70 px-6 py-3 rounded-full border-2 border-yellow-500/30 text-yellow-200 text-sm md:text-base lg:text-lg font-mono animate-pulse shadow-xl leading-tight backdrop-blur-sm">
+                <div id="gameHint" class="bg-black/70 px-6 py-2 rounded-full border-2 border-yellow-500/30 text-yellow-200 text-sm font-mono animate-pulse shadow-xl leading-tight backdrop-blur-sm">
                     Ketuk Pos Anda -> Ketuk Tujuan
                 </div>
             </div>
 
             <!-- Notification/Phase Modal -->
             <div id="notificationModal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
-                <div class="bg-gray-900/90 border-4 border-yellow-400 px-12 py-8 rounded-3xl transform scale-100 md:scale-125 lg:scale-150 shadow-[0_0_50px_rgba(234,179,8,0.5)]">
-                    <h2 id="notifTitle" class="title-font text-4xl lg:text-5xl text-yellow-400 text-center uppercase">PUTARAN 1</h2>
-                    <p id="notifDesc" class="text-white text-center font-mono mt-2 text-xl lg:text-2xl">FASE PENGUMPULAN</p>
+                <div class="bg-gray-900/90 border-4 border-yellow-400 px-12 py-8 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.5)]">
+                    <h2 id="notifTitle" class="title-font text-5xl text-yellow-400 text-center uppercase">PUTARAN 1</h2>
+                    <p id="notifDesc" class="text-white text-center font-mono mt-2 text-2xl">FASE PENGUMPULAN</p>
                 </div>
             </div>
 
             <!-- Pause Modal (Global) -->
             <div id="pauseModal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                <div class="bg-gray-800 p-8 lg:p-12 rounded-2xl border-4 border-blue-400 text-center modal-content w-full max-w-sm lg:max-w-md">
-                    <h2 class="title-font text-4xl lg:text-5xl mb-8 text-blue-300">ISTIRAHAT</h2>
-                    <div class="flex flex-col gap-4 lg:gap-6">
-                        <button onclick="game.togglePause()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-2xl lg:text-3xl border-b-4 border-green-700">LANJUT</button>
-                        <button onclick="game.quit()" class="game-btn bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl text-2xl lg:text-3xl border-b-4 border-red-700">KELUAR</button>
+                <div class="bg-gray-800 p-10 rounded-2xl border-4 border-blue-400 text-center modal-content w-[90%] max-w-[20rem]">
+                    <h2 class="title-font text-5xl mb-8 text-blue-300">ISTIRAHAT</h2>
+                    <div class="flex flex-col gap-4">
+                        <button onclick="game.togglePause()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-2xl border-b-4 border-green-700">LANJUT</button>
+                        <button onclick="game.quit()" class="game-btn bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl text-2xl border-b-4 border-red-700">KELUAR</button>
                     </div>
                 </div>
             </div>
 
             <!-- Game Over -->
             <div id="gameOverModal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-                <div class="bg-gray-800 p-8 lg:p-12 rounded-3xl border-4 border-white text-center modal-content max-w-lg lg:max-w-2xl w-full">
-                    <h2 id="winnerText" class="title-font text-4xl md:text-5xl lg:text-6xl mb-6 text-yellow-400 leading-tight">SELESAI</h2>
-                    <div class="text-7xl lg:text-8xl mb-8 animate-bounce" id="winnerIcon">🏆</div>
-                    <p class="mb-10 text-gray-300 text-xl lg:text-2xl" id="winnerDesc">...</p>
+                <div class="bg-gray-800 p-12 rounded-3xl border-4 border-white text-center modal-content w-[90%] max-w-[40rem]">
+                    <h2 id="winnerText" class="title-font text-5xl mb-6 text-yellow-400 leading-tight">SELESAI</h2>
+                    <div class="text-8xl mb-8 animate-bounce" id="winnerIcon">🏆</div>
+                    <p class="mb-10 text-gray-300 text-2xl" id="winnerDesc">...</p>
                     <div class="flex flex-col md:flex-row gap-6 justify-center">
-                        <button onclick="location.reload()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-10 rounded-full text-xl lg:text-2xl border-b-4 border-green-700">Main Lagi</button>
-                        <button onclick="game.quit()" class="game-btn bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-10 rounded-full text-xl lg:text-2xl border-b-4 border-gray-800">Menu Utama</button>
+                        <button onclick="location.reload()" class="game-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-10 rounded-full text-2xl border-b-4 border-green-700">Main Lagi</button>
+                        <button onclick="game.quit()" class="game-btn bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-10 rounded-full text-2xl border-b-4 border-gray-800">Menu Utama</button>
                     </div>
                 </div>
             </div>
@@ -370,9 +376,9 @@
     </div>
 
     <!-- 4. FOOTER -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-gray-900/90 border-t border-gray-800 py-2 px-4 flex justify-between items-center z-50 text-xs md:text-sm text-gray-500 backdrop-blur-md">
+    <footer class="fixed bottom-0 left-0 right-0 bg-gray-900/90 border-t border-gray-800 py-2 px-4 flex justify-between items-center z-50 text-xs text-gray-500 backdrop-blur-md">
         <div>Game design by @herisheroes</div>
-        <div class="flex gap-4 text-lg">
+        <div class="flex gap-4 text-base">
             <i class="fab fa-youtube hover:text-red-500 cursor-pointer"></i>
             <i class="fab fa-tiktok hover:text-pink-500 cursor-pointer"></i>
             <i class="fab fa-instagram hover:text-purple-500 cursor-pointer"></i>
@@ -380,7 +386,7 @@
     </footer>
 
     <script>
-        const PLANETS = [
+        var PLANETS = [
             {
                 name: "Merkurius",
                 desc: "Jalur Sejajar",
@@ -485,14 +491,14 @@
             }
         ];
 
-        const CONFIG = {
+        var CONFIG = {
             baseHP: 100,
             troopSpeed: 3, 
             baseNodeRadius: 35,
             postNodeRadius: 22,
         };
 
-        const STATE = {
+        var STATE = {
             mode: 'single', // 'single' | 'multi'
             currentLevel: null,
             isPlaying: false,
@@ -709,12 +715,13 @@
             }
         }
 
-        const ui = {
+        var ui = {
             showMenu() {
                 document.getElementById('splashScreen').classList.add('hidden');
                 document.getElementById('levelSelectScreen').classList.add('hidden');
-                document.getElementById('menuScreen').classList.remove('hidden');
-                document.getElementById('menuScreen').classList.add('flex');
+                const menu = document.getElementById('menuScreen');
+                menu.classList.remove('hidden');
+                menu.classList.add('flex'); // Pastikan flex agar tengah
             },
             showLevelSelect() {
                 STATE.p1Name = document.getElementById('p1Name').value || "Hero";
@@ -751,7 +758,7 @@
                 });
                 document.getElementById('menuScreen').classList.add('hidden');
                 document.getElementById('levelSelectScreen').classList.remove('hidden');
-                document.getElementById('levelSelectScreen').classList.add('flex');
+                document.getElementById('levelSelectScreen').classList.add('flex'); // Pastikan flex
             },
             setMode(mode) {
                 STATE.mode = mode;
@@ -800,10 +807,10 @@
                     // Multi: Show Gather Timer if in phase 1, else Turn Info
                     if (STATE.turnPhase === 'gather') {
                          timeStr = `00:${STATE.turnGatherTimer.toString().padStart(2,'0')}`;
-                         document.getElementById('timerDisplay').className = "font-mono text-xl md:text-2xl lg:text-3xl text-red-400 font-bold block leading-none animate-pulse";
+                         document.getElementById('timerDisplay').className = "font-mono text-3xl text-red-400 font-bold block leading-none animate-pulse";
                     } else {
                         timeStr = STATE.turnActivePlayer === 1 ? "GILIRAN P1" : "GILIRAN P2";
-                        document.getElementById('timerDisplay').className = "font-mono text-xl md:text-xl lg:text-2xl text-yellow-400 font-bold block leading-none";
+                        document.getElementById('timerDisplay').className = "font-mono text-xl text-yellow-400 font-bold block leading-none";
                     }
                 }
                 document.getElementById('timerDisplay').innerText = timeStr;
@@ -826,8 +833,8 @@
                 const btnMathP2 = document.getElementById('btnMathP2');
 
                 // Reset
-                p1Wrap.className = "w-1/3 max-w-sm transition-all duration-300 p-3 rounded-xl border border-transparent";
-                p2Wrap.className = "w-1/3 max-w-sm text-right transition-all duration-300 p-3 rounded-xl border border-transparent";
+                p1Wrap.className = "w-1/3 max-w-[20rem] transition-all duration-300 p-2 rounded-xl border border-transparent";
+                p2Wrap.className = "w-1/3 max-w-[20rem] text-right transition-all duration-300 p-2 rounded-xl border border-transparent";
                 btnSkipP1.classList.add('hidden');
                 btnSkipP2.classList.add('hidden');
                 btnMathP1.classList.add('hidden');
@@ -852,7 +859,7 @@
             }
         };
 
-        const mathGame = {
+        var mathGame = {
             p1Answer: "", p2Answer: "",
             showModal(playerId) {
                 if (STATE.isPaused) return;
@@ -924,7 +931,7 @@
             }
         };
 
-        const game = {
+        var game = {
             canvas: null, ctx: null,
             timerInterval: null,
             bgImage: new Image(),
@@ -941,6 +948,7 @@
                 
                 // Initialize default mode visibility
                 ui.setMode('single');
+                this.resize(); // Call resize immediately to set scale
             },
             
             resize() {
@@ -949,12 +957,18 @@
                 
                 // SCALING LOGIC FOR RESPONSIVENESS
                 // Base resolution: 1280x720 (Standard HD)
-                // If screen is larger (e.g. TV 4K), elements scale up.
-                // If screen is smaller (e.g. Mobile), elements scale properly.
-                const scaleX = this.canvas.width / 1280;
-                const scaleY = this.canvas.height / 720;
+                const baseW = 1280;
+                const baseH = 720;
+                const scaleX = this.canvas.width / baseW;
+                const scaleY = this.canvas.height / baseH;
                 // Use the smaller scale factor to ensure elements fit on screen
                 STATE.scale = Math.min(scaleX, scaleY);
+
+                // --- ROOT FONT SIZE SCALING ---
+                // Set root font size based on scale. Base 16px.
+                // This scales all REM values in CSS.
+                const rootSize = 16 * STATE.scale;
+                document.documentElement.style.fontSize = `${rootSize}px`;
 
                 if (STATE.nodes.length) {
                     STATE.nodes.forEach(n => n.updatePos(this.canvas.width, this.canvas.height));
